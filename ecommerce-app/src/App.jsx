@@ -6,10 +6,12 @@ import {
   Col,
   Container,
   Modal,
+  Nav,
   Navbar,
   Row,
   Table,
 } from 'react-bootstrap'
+import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 
 const productsArr = [
@@ -180,7 +182,33 @@ function ProductList() {
   )
 }
 
-function Store() {
+function HomePage() {
+  return (
+    <Container className="py-5">
+      <h1 className="store-title text-center mb-5">Music</h1>
+
+      <ProductList />
+    </Container>
+  )
+}
+
+function AboutPage() {
+  return (
+    <Container className="py-5 about-page">
+      <h1 className="store-title text-center mb-4">About Us</h1>
+      <p className="lead text-center mx-auto">
+        This store is built for music lovers who enjoy colorful album art,
+        simple shopping, and clean collections.
+      </p>
+      <p className="text-center mx-auto">
+        Browse the products, add your favorite albums to the cart, and manage
+        the cart from the button at the top right.
+      </p>
+    </Container>
+  )
+}
+
+function StoreLayout() {
   const [showCart, setShowCart] = useState(false)
   const { cartItemCount } = useCart()
 
@@ -189,17 +217,24 @@ function Store() {
       <Navbar bg="dark" variant="dark" className="store-navbar">
         <Container>
           <Navbar.Brand>Music</Navbar.Brand>
+          <Nav className="me-auto">
+            <NavLink to="/" className="nav-link">
+              Home
+            </NavLink>
+            <NavLink to="/about" className="nav-link">
+              About
+            </NavLink>
+          </Nav>
           <Button variant="light" onClick={() => setShowCart(true)}>
             Cart <Badge bg="danger">{cartItemCount}</Badge>
           </Button>
         </Container>
       </Navbar>
 
-      <Container className="py-5">
-        <h1 className="store-title text-center mb-5">Music</h1>
-
-        <ProductList />
-      </Container>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
 
       <Modal show={showCart} onHide={() => setShowCart(false)} size="lg" centered>
         <Modal.Header closeButton>
@@ -215,9 +250,11 @@ function Store() {
 
 function App() {
   return (
-    <CartProvider>
-      <Store />
-    </CartProvider>
+    <BrowserRouter>
+      <CartProvider>
+        <StoreLayout />
+      </CartProvider>
+    </BrowserRouter>
   )
 }
 
