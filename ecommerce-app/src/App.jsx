@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import {
   Badge,
   Button,
@@ -56,7 +56,52 @@ const cartElements = [
   },
 ]
 
-function Cart({ cartItems, onRemove }) {
+const CartContext = createContext()
+
+function CartProvider({ children }) {
+  const [cartItems, setCartItems] = useState(cartElements)
+
+  const addToCart = (product) => {
+    setCartItems((items) => {
+      const existingItem = items.find((item) => item.title === product.title)
+
+      if (existingItem) {
+        return items.map((item) =>
+          item.title === product.title
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        )
+      }
+
+      return [...items, { ...product, quantity: 1 }]
+    })
+  }
+
+  const removeCartItem = (title) => {
+    setCartItems((items) => items.filter((item) => item.title !== title))
+  }
+
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  )
+
+  return (
+    <CartContext.Provider
+      value={{ cartItems, addToCart, removeCartItem, cartItemCount }}
+    >
+      {children}
+    </CartContext.Provider>
+  )
+}
+
+function useCart() {
+  return useContext(CartContext)
+}
+
+function Cart() {
+  const { cartItems, removeCartItem } = useCart()
+
   return (
     <section className="cart-section">
       <Table responsive hover className="align-middle cart-table mb-0">
@@ -87,7 +132,7 @@ function Cart({ cartItems, onRemove }) {
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => onRemove(item.title)}
+                  onClick={() => removeCartItem(item.title)}
                 >
                   Remove
                 </Button>
@@ -100,13 +145,44 @@ function Cart({ cartItems, onRemove }) {
   )
 }
 
-function App() {
-  const [showCart, setShowCart] = useState(false)
-  const [cartItems, setCartItems] = useState(cartElements)
+function ProductList() {
+  const { addToCart } = useCart()
 
-  const removeCartItem = (title) => {
-    setCartItems((items) => items.filter((item) => item.title !== title))
-  }
+  return (
+    <Row className="g-4">
+      {productsArr.map((product) => (
+        <Col sm={6} lg={3} key={product.title}>
+          <Card className="product-card h-100">
+            <Card.Img
+              variant="top"
+              src={product.imageUrl}
+              alt={product.title}
+            />
+            <Card.Body className="d-flex flex-column">
+              <Card.Title className="text-center mb-3">
+                {product.title}
+              </Card.Title>
+              <div className="d-flex align-items-center justify-content-between mt-auto">
+                <span className="fw-semibold">Rs {product.price}</span>
+                <Button
+                  variant="info"
+                  className="text-white"
+                  onClick={() => addToCart(product)}
+                >
+                  Add To Cart
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  )
+}
+
+function Store() {
+  const [showCart, setShowCart] = useState(false)
+  const { cartItemCount } = useCart()
 
   return (
     <div className="store-page">
@@ -114,7 +190,7 @@ function App() {
         <Container>
           <Navbar.Brand>Music</Navbar.Brand>
           <Button variant="light" onClick={() => setShowCart(true)}>
-            Cart <Badge bg="danger">{cartItems.length}</Badge>
+            Cart <Badge bg="danger">{cartItemCount}</Badge>
           </Button>
         </Container>
       </Navbar>
@@ -122,30 +198,7 @@ function App() {
       <Container className="py-5">
         <h1 className="store-title text-center mb-5">Music</h1>
 
-        <Row className="g-4">
-          {productsArr.map((product) => (
-            <Col sm={6} lg={3} key={product.title}>
-              <Card className="product-card h-100">
-                <Card.Img
-                  variant="top"
-                  src={product.imageUrl}
-                  alt={product.title}
-                />
-                <Card.Body className="d-flex flex-column">
-                  <Card.Title className="text-center mb-3">
-                    {product.title}
-                  </Card.Title>
-                  <div className="d-flex align-items-center justify-content-between mt-auto">
-                    <span className="fw-semibold">Rs {product.price}</span>
-                    <Button variant="info" className="text-white">
-                      Add To Cart
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        <ProductList />
       </Container>
 
       <Modal show={showCart} onHide={() => setShowCart(false)} size="lg" centered>
@@ -153,10 +206,18 @@ function App() {
           <Modal.Title>Cart</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Cart cartItems={cartItems} onRemove={removeCartItem} />
+          <Cart />
         </Modal.Body>
       </Modal>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <CartProvider>
+      <Store />
+    </CartProvider>
   )
 }
 
