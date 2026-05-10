@@ -1,0 +1,10 @@
+{
+  "name": "ecommerce-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix ecommerce-app run dev",
+    "build": "npm --prefix ecommerce-app run build",
+    "lint": "npm --prefix ecommerce-app run lint",
+    "preview": "npm --prefix ecommerce-app run preview"
+  }
+}
