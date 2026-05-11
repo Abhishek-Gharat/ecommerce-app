@@ -14,6 +14,39 @@ import {
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 
+const tours = [
+  {
+    date: 'JUL 16',
+    city: 'DETROIT, MI',
+    venue: 'DTE ENERGY MUSIC THEATRE',
+  },
+  {
+    date: 'JUL 19',
+    city: 'TORONTO, ON',
+    venue: 'BUDWEISER STAGE',
+  },
+  {
+    date: 'JUL 22',
+    city: 'BRISTOW, VA',
+    venue: 'JIGGY LUBE LIVE',
+  },
+  {
+    date: 'JUL 29',
+    city: 'PHOENIX, AZ',
+    venue: 'AK-CHIN PAVILION',
+  },
+  {
+    date: 'AUG 2',
+    city: 'LAS VEGAS, NV',
+    venue: 'T-MOBILE ARENA',
+  },
+  {
+    date: 'AUG 7',
+    city: 'CONCORD, CA',
+    venue: 'CONCORD PAVILION',
+  },
+]
+
 const productsArr = [
   {
     title: 'Colors',
@@ -184,9 +217,26 @@ function ProductList() {
 
 function HomePage() {
   return (
-    <Container className="py-5">
-      <h1 className="store-title text-center mb-5">Music</h1>
+    <Container className="home-content py-5">
+      <h1 className="section-title text-center mb-4">Tours</h1>
+      <div className="tour-list">
+        {tours.map((tour) => (
+          <div className="tour-row" key={`${tour.date}-${tour.city}`}>
+            <span className="tour-date">{tour.date}</span>
+            <span className="tour-city">{tour.city}</span>
+            <span className="tour-venue">{tour.venue}</span>
+            <Button className="tour-button">Buy Tickets</Button>
+          </div>
+        ))}
+      </div>
+    </Container>
+  )
+}
 
+function StorePage() {
+  return (
+    <Container className="py-5">
+      <h1 className="section-title text-center mb-5">Music</h1>
       <ProductList />
     </Container>
   )
@@ -195,7 +245,7 @@ function HomePage() {
 function AboutPage() {
   return (
     <Container className="py-5 about-page">
-      <h1 className="store-title text-center mb-4">About Us</h1>
+      <h1 className="section-title text-center mb-4">About Us</h1>
       <p className="lead text-center mx-auto">
         This store is built for music lovers who enjoy colorful album art,
         simple shopping, and clean collections.
@@ -214,12 +264,17 @@ function StoreLayout() {
 
   return (
     <div className="store-page">
-      <Navbar bg="dark" variant="dark" className="store-navbar">
+      <Navbar bg="dark" variant="dark" className="store-navbar" expand="md">
         <Container>
-          <Navbar.Brand>Music</Navbar.Brand>
+          <Navbar.Brand>The Generics</Navbar.Brand>
+          <Navbar.Toggle aria-controls="store-navbar-nav" />
+          <Navbar.Collapse id="store-navbar-nav">
           <Nav className="me-auto">
             <NavLink to="/" className="nav-link">
               Home
+            </NavLink>
+            <NavLink to="/store" className="nav-link">
+              Store
             </NavLink>
             <NavLink to="/about" className="nav-link">
               About
@@ -228,13 +283,40 @@ function StoreLayout() {
           <Button variant="light" onClick={() => setShowCart(true)}>
             Cart <Badge bg="danger">{cartItemCount}</Badge>
           </Button>
+          </Navbar.Collapse>
         </Container>
       </Navbar>
 
+      <header className="site-hero">
+        <h1>The Generics</h1>
+        <Button className="album-button">Get Our Latest Album</Button>
+        <button className="play-button" aria-label="Play featured music">
+          Play
+        </button>
+      </header>
+
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/store" element={<StorePage />} />
         <Route path="/about" element={<AboutPage />} />
       </Routes>
+
+      <footer className="site-footer">
+        <Container className="footer-content">
+          <h2>The Generics</h2>
+          <div className="footer-links">
+            <a href="https://www.youtube.com/" target="_blank" rel="noreferrer">
+              YouTube
+            </a>
+            <a href="https://open.spotify.com/" target="_blank" rel="noreferrer">
+              Spotify
+            </a>
+            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+              Facebook
+            </a>
+          </div>
+        </Container>
+      </footer>
 
       <Modal show={showCart} onHide={() => setShowCart(false)} size="lg" centered>
         <Modal.Header closeButton>
