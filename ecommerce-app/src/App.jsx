@@ -11,7 +11,7 @@ import {
   Row,
   Table,
 } from 'react-bootstrap'
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
+import { HashRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 
 const tours = [
@@ -332,11 +332,11 @@ function StoreLayout() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <CartProvider>
         <StoreLayout />
       </CartProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
