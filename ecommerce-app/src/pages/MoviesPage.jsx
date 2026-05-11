@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Badge, Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { Badge, Button, Card, Col, Container, Form, Row } from 'react-bootstrap'
+
+const initialMovieForm = {
+  title: '',
+  openingText: '',
+  releaseDate: '',
+}
 
 function MoviesPage() {
   const [movies, setMovies] = useState([])
+  const [movieForm, setMovieForm] = useState(initialMovieForm)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isRetrying, setIsRetrying] = useState(false)
@@ -60,6 +67,31 @@ function MoviesPage() {
     setError('Retrying cancelled')
   }, [])
 
+  const handleMovieInputChange = useCallback((event) => {
+    const { name, value } = event.target
+
+    setMovieForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }))
+  }, [])
+
+  const handleAddMovie = useCallback(
+    (event) => {
+      event.preventDefault()
+
+      const NewMovieObj = {
+        title: movieForm.title,
+        openingText: movieForm.openingText,
+        releaseDate: movieForm.releaseDate,
+      }
+
+      console.log(NewMovieObj)
+      setMovieForm(initialMovieForm)
+    },
+    [movieForm],
+  )
+
   const movieCards = useMemo(
     () =>
       movies.map((movie) => (
@@ -84,6 +116,52 @@ function MoviesPage() {
   return (
     <Container className="py-5 movies-page">
       <h1 className="section-title text-center mb-4">Movies</h1>
+
+      <Card className="add-movie-card mx-auto mb-5">
+        <Card.Body>
+          <Form onSubmit={handleAddMovie}>
+            <Form.Group className="mb-3" controlId="movie-title">
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                type="text"
+                name="title"
+                value={movieForm.title}
+                onChange={handleMovieInputChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="movie-opening-text">
+              <Form.Label>Opening Text</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name="openingText"
+                value={movieForm.openingText}
+                onChange={handleMovieInputChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-4" controlId="movie-release-date">
+              <Form.Label>Release Date</Form.Label>
+              <Form.Control
+                type="date"
+                name="releaseDate"
+                value={movieForm.releaseDate}
+                onChange={handleMovieInputChange}
+                required
+              />
+            </Form.Group>
+
+            <div className="text-center">
+              <Button type="submit" variant="primary">
+                Add Movie
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
 
       {isLoading && <p className="text-center">Loading movies...</p>}
       {error && <p className="text-center text-danger">{error}</p>}
