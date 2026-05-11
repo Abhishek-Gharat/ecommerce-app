@@ -24,6 +24,9 @@ function StoreNavbar({ onCartOpen }) {
             <NavLink to="/movies" className="nav-link">
               Movies
             </NavLink>
+            <NavLink to="/contact" className="nav-link">
+              Contact
+            </NavLink>
           </Nav>
           <Button variant="light" onClick={onCartOpen}>
             Cart <Badge bg="danger">{cartItemCount}</Badge>

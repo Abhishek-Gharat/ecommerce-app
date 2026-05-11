@@ -9,6 +9,7 @@ import AboutPage from '../pages/AboutPage'
 import HomePage from '../pages/HomePage'
 import MoviesPage from '../pages/MoviesPage'
 import StorePage from '../pages/StorePage'
+import ContactPage from '../pages/ContactPage'
 
 function StoreLayout() {
   const [showCart, setShowCart] = useState(false)
@@ -23,6 +24,7 @@ function StoreLayout() {
         <Route path="/store" element={<StorePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/movies" element={<MoviesPage />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Routes>
 
       <Footer />
