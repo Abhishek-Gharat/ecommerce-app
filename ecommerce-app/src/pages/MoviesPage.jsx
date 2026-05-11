@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react'
-import { Badge, Card, Col, Container, Row } from 'react-bootstrap'
+import { useEffect, useRef, useState } from 'react'
+import { Badge, Button, Card, Col, Container, Row } from 'react-bootstrap'
 
 function MoviesPage() {
   const [movies, setMovies] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
+  const retryTimeoutRef = useRef(null)
+  const shouldRetryRef = useRef(true)
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -21,15 +25,35 @@ function MoviesPage() {
 
         const data = await response.json()
         setMovies(data)
-      } catch (err) {
-        setError(err.message)
+        setIsRetrying(false)
+      } catch {
+        setError('Something went wrong ....Retrying')
+        setIsRetrying(true)
+
+        if (shouldRetryRef.current) {
+          retryTimeoutRef.current = setTimeout(() => {
+            setRetryCount((count) => count + 1)
+          }, 5000)
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchMovies()
-  }, [])
+
+    return () => {
+      clearTimeout(retryTimeoutRef.current)
+    }
+  }, [retryCount])
+
+  const cancelRetrying = () => {
+    shouldRetryRef.current = false
+    clearTimeout(retryTimeoutRef.current)
+    setIsRetrying(false)
+    setIsLoading(false)
+    setError('Retrying cancelled')
+  }
 
   return (
     <Container className="py-5 movies-page">
@@ -37,6 +61,13 @@ function MoviesPage() {
 
       {isLoading && <p className="text-center">Loading movies...</p>}
       {error && <p className="text-center text-danger">{error}</p>}
+      {isRetrying && (
+        <div className="text-center mb-4">
+          <Button variant="danger" onClick={cancelRetrying}>
+            Cancel Retrying
+          </Button>
+        </div>
+      )}
 
       {!isLoading && !error && (
         <Row className="g-4">
