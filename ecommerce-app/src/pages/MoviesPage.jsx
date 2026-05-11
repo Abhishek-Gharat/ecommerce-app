@@ -8,6 +8,10 @@ function MoviesPage() {
 
   useEffect(() => {
     const fetchMovies = async () => {
+      setIsLoading(true)
+      setError('')
+      setMovies([])
+
       try {
         const response = await fetch('https://swapi.info/api/films')
 
@@ -29,7 +33,7 @@ function MoviesPage() {
 
   return (
     <Container className="py-5 movies-page">
-      <h1 className="section-title text-center mb-4">Movies1</h1>
+      <h1 className="section-title text-center mb-4">Movies</h1>
 
       {isLoading && <p className="text-center">Loading movies...</p>}
       {error && <p className="text-center text-danger">{error}</p>}
@@ -59,4 +63,3 @@ function MoviesPage() {
 }
 
 export default MoviesPage
-
