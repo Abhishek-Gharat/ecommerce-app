@@ -162,6 +162,22 @@
   max-width: 760px;
 }
 
+.movies-page {
+  max-width: 1120px;
+}
+
+.movie-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+.movie-card .card-text {
+  color: #444444;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .site-footer {
   margin-top: 30px;
   background: #56c6e6;
