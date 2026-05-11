@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Badge, Button, Card, Col, Container, Form, Row } from 'react-bootstrap'
+import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap'
 
 const initialMovieForm = {
   title: '',
   openingText: '',
   releaseDate: '',
 }
+
+const MOVIES_API_URL =
+  import.meta.env.VITE_MOVIES_DATABASE_URL ||
+  'https://react-http-6b4a6-default-rtdb.firebaseio.com/movies.json'
 
 function MoviesPage() {
   const [movies, setMovies] = useState([])
@@ -23,14 +27,25 @@ function MoviesPage() {
     setMovies([])
 
     try {
-      const response = await fetch('https://swapi.info/api/films')
+      const response = await fetch(MOVIES_API_URL)
 
       if (!response.ok) {
         throw new Error('Could not fetch movies')
       }
 
       const data = await response.json()
-      setMovies(data)
+      const loadedMovies = []
+
+      for (const key in data || {}) {
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate,
+        })
+      }
+
+      setMovies(loadedMovies)
       setIsRetrying(false)
     } catch {
       if (!shouldRetryRef.current) {
@@ -77,7 +92,7 @@ function MoviesPage() {
   }, [])
 
   const handleAddMovie = useCallback(
-    (event) => {
+    async (event) => {
       event.preventDefault()
 
       const NewMovieObj = {
@@ -86,31 +101,80 @@ function MoviesPage() {
         releaseDate: movieForm.releaseDate,
       }
 
-      console.log(NewMovieObj)
-      setMovieForm(initialMovieForm)
+      try {
+        const response = await fetch(MOVIES_API_URL, {
+          method: 'POST',
+          body: JSON.stringify(NewMovieObj),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Could not add movie')
+        }
+
+        const data = await response.json()
+
+        setMovies((currentMovies) => [
+          ...currentMovies,
+          {
+            id: data.name,
+            ...NewMovieObj,
+          },
+        ])
+        setMovieForm(initialMovieForm)
+        setError('')
+      } catch {
+        setError('Could not add movie')
+      }
     },
     [movieForm],
   )
 
+  const handleDeleteMovie = useCallback(async (movieId) => {
+    try {
+      const deleteUrl = MOVIES_API_URL.replace('.json', `/${movieId}.json`)
+      const response = await fetch(deleteUrl, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Could not delete movie')
+      }
+
+      setMovies((currentMovies) =>
+        currentMovies.filter((movie) => movie.id !== movieId),
+      )
+      setError('')
+    } catch {
+      setError('Could not delete movie')
+    }
+  }, [])
+
   const movieCards = useMemo(
     () =>
       movies.map((movie) => (
-        <Col md={6} lg={4} key={movie.episode_id}>
+        <Col md={6} lg={4} key={movie.id}>
           <Card className="movie-card h-100">
             <Card.Body>
               <Card.Title>{movie.title}</Card.Title>
               <Card.Subtitle className="mb-3 text-muted">
-                Episode {movie.episode_id}
+                Released {movie.releaseDate}
               </Card.Subtitle>
-              <Card.Text>{movie.opening_crawl}</Card.Text>
-              <Badge bg="info" text="dark">
-                Released {movie.release_date}
-              </Badge>
+              <Card.Text>{movie.openingText}</Card.Text>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => handleDeleteMovie(movie.id)}
+              >
+                Delete Movie
+              </Button>
             </Card.Body>
           </Card>
         </Col>
       )),
-    [movies],
+    [handleDeleteMovie, movies],
   )
 
   return (
