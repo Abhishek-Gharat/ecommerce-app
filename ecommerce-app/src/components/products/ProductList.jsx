@@ -1,4 +1,5 @@
 import { Button, Card, Col, Row } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 import { productsArr } from '../../data/products'
 import { useCart } from '../../hooks/useCart'
 
@@ -8,17 +9,21 @@ function ProductList() {
   return (
     <Row className="g-4">
       {productsArr.map((product) => (
-        <Col sm={6} lg={3} key={product.title}>
+        <Col sm={6} lg={3} key={product.id}>
           <Card className="product-card h-100">
-            <Card.Img
-              variant="top"
-              src={product.imageUrl}
-              alt={product.title}
-            />
+            <Link to={`/store/${product.id}`} className="product-link">
+              <Card.Img
+                variant="top"
+                src={product.imageUrl}
+                alt={product.title}
+              />
+            </Link>
             <Card.Body className="d-flex flex-column">
-              <Card.Title className="text-center mb-3">
-                {product.title}
-              </Card.Title>
+              <Link to={`/store/${product.id}`} className="product-link">
+                <Card.Title className="text-center mb-3">
+                  {product.title}
+                </Card.Title>
+              </Link>
               <div className="d-flex align-items-center justify-content-between mt-auto">
                 <span className="fw-semibold">Rs {product.price}</span>
                 <Button
@@ -29,6 +34,14 @@ function ProductList() {
                   Add To Cart
                 </Button>
               </div>
+              <Button
+                as={Link}
+                to={`/store/${product.id}`}
+                variant="outline-dark"
+                className="mt-3"
+              >
+                View Details
+              </Button>
             </Card.Body>
           </Card>
         </Col>
