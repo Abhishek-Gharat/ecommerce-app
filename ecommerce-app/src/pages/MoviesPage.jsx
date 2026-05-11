@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Badge, Button, Card, Col, Container, Row } from 'react-bootstrap'
 
 function MoviesPage() {
@@ -10,50 +10,76 @@ function MoviesPage() {
   const retryTimeoutRef = useRef(null)
   const shouldRetryRef = useRef(true)
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      setIsLoading(true)
-      setError('')
-      setMovies([])
+  const fetchMovies = useCallback(async () => {
+    setIsLoading(true)
+    setError('')
+    setMovies([])
 
-      try {
-        const response = await fetch('https://swapi.info/api/films')
+    try {
+      const response = await fetch('https://swapi.info/api/films')
 
-        if (!response.ok) {
-          throw new Error('Could not fetch movies')
-        }
-
-        const data = await response.json()
-        setMovies(data)
-        setIsRetrying(false)
-      } catch {
-        setError('Something went wrong ....Retrying')
-        setIsRetrying(true)
-
-        if (shouldRetryRef.current) {
-          retryTimeoutRef.current = setTimeout(() => {
-            setRetryCount((count) => count + 1)
-          }, 5000)
-        }
-      } finally {
-        setIsLoading(false)
+      if (!response.ok) {
+        throw new Error('Could not fetch movies')
       }
-    }
 
-    fetchMovies()
+      const data = await response.json()
+      setMovies(data)
+      setIsRetrying(false)
+    } catch {
+      if (!shouldRetryRef.current) {
+        setError('Retrying cancelled')
+        setIsRetrying(false)
+        return
+      }
+
+      setError('Something went wrong ....Retrying')
+      setIsRetrying(true)
+
+      retryTimeoutRef.current = setTimeout(() => {
+        setRetryCount((count) => count + 1)
+      }, 5000)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchTimeout = setTimeout(fetchMovies, 0)
 
     return () => {
+      clearTimeout(fetchTimeout)
       clearTimeout(retryTimeoutRef.current)
     }
-  }, [retryCount])
+  }, [fetchMovies, retryCount])
 
-  const cancelRetrying = () => {
+  const cancelRetrying = useCallback(() => {
     shouldRetryRef.current = false
     clearTimeout(retryTimeoutRef.current)
     setIsRetrying(false)
     setIsLoading(false)
     setError('Retrying cancelled')
-  }
+  }, [])
+
+  const movieCards = useMemo(
+    () =>
+      movies.map((movie) => (
+        <Col md={6} lg={4} key={movie.episode_id}>
+          <Card className="movie-card h-100">
+            <Card.Body>
+              <Card.Title>{movie.title}</Card.Title>
+              <Card.Subtitle className="mb-3 text-muted">
+                Episode {movie.episode_id}
+              </Card.Subtitle>
+              <Card.Text>{movie.opening_crawl}</Card.Text>
+              <Badge bg="info" text="dark">
+                Released {movie.release_date}
+              </Badge>
+            </Card.Body>
+          </Card>
+        </Col>
+      )),
+    [movies],
+  )
 
   return (
     <Container className="py-5 movies-page">
@@ -70,24 +96,7 @@ function MoviesPage() {
       )}
 
       {!isLoading && !error && (
-        <Row className="g-4">
-          {movies.map((movie) => (
-            <Col md={6} lg={4} key={movie.episode_id}>
-              <Card className="movie-card h-100">
-                <Card.Body>
-                  <Card.Title>{movie.title}</Card.Title>
-                  <Card.Subtitle className="mb-3 text-muted">
-                    Episode {movie.episode_id}
-                  </Card.Subtitle>
-                  <Card.Text>{movie.opening_crawl}</Card.Text>
-                  <Badge bg="info" text="dark">
-                    Released {movie.release_date}
-                  </Badge>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        <Row className="g-4">{movieCards}</Row>
       )}
     </Container>
   )
