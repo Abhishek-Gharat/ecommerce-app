@@ -7,9 +7,9 @@ const initialMovieForm = {
   releaseDate: '',
 }
 
-const MOVIES_API_URL =
-  import.meta.env.VITE_MOVIES_DATABASE_URL ||
-  'https://react-http-6b4a6-default-rtdb.firebaseio.com/movies.json'
+const MOVIES_API_URL = import.meta.env.VITE_MOVIES_DATABASE_URL
+const MOVIES_DATABASE_SETUP_ERROR =
+  'Please add your Firebase Realtime Database URL in VITE_MOVIES_DATABASE_URL'
 
 function MoviesPage() {
   const [movies, setMovies] = useState([])
@@ -22,6 +22,13 @@ function MoviesPage() {
   const shouldRetryRef = useRef(true)
 
   const fetchMovies = useCallback(async () => {
+    if (!MOVIES_API_URL) {
+      setIsLoading(false)
+      setIsRetrying(false)
+      setError(MOVIES_DATABASE_SETUP_ERROR)
+      return
+    }
+
     setIsLoading(true)
     setError('')
     setMovies([])
@@ -101,6 +108,11 @@ function MoviesPage() {
         releaseDate: movieForm.releaseDate,
       }
 
+      if (!MOVIES_API_URL) {
+        setError(MOVIES_DATABASE_SETUP_ERROR)
+        return
+      }
+
       try {
         const response = await fetch(MOVIES_API_URL, {
           method: 'POST',
@@ -133,6 +145,11 @@ function MoviesPage() {
   )
 
   const handleDeleteMovie = useCallback(async (movieId) => {
+    if (!MOVIES_API_URL) {
+      setError(MOVIES_DATABASE_SETUP_ERROR)
+      return
+    }
+
     try {
       const deleteUrl = MOVIES_API_URL.replace('.json', `/${movieId}.json`)
       const response = await fetch(deleteUrl, {
